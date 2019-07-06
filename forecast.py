@@ -1,8 +1,11 @@
 import requests
 import sys
+import json
 import xml.etree.ElementTree as ET
 shortterm = '_hour_by_hour'
 xml  = '.xml'
+webhook_url = 'https://hooks.slack.com/services/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'
+
 urls = ['https://www.yr.no/place/Norway/Akershus/Frogn/Torkilstranda/forecast',
         'https://www.yr.no/sted/Norge/%C3%98stfold/Rygge/Larkollen~2779456/forecast',
         'https://www.yr.no/place/Norway/%C3%98stfold/Hvaler/Brattest%C3%B8/forecast',
@@ -46,3 +49,15 @@ for url in urls:
 
             if float(spd.get('mps')) > limit:
                 print(report.format(name, frm, dir.get('deg'), dir.get('code'), spd.get('mps'), tmp.get('value'), psi.get('value')))
+                slack_data = {'text': "place: {} windspeed: {}".format(name, spd)}
+
+
+                response = requests.post(
+                    webhook_url, data=json.dumps(slack_data),
+                    headers={'Content-Type': 'application/json'}
+                )
+                if response.status_code != 200:
+                    raise ValueError(
+                        'Request to slack returned an error %s, the response is:\n%s'
+                        % (response.status_code, response.text)
+                    )
