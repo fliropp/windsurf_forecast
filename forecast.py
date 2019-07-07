@@ -1,7 +1,10 @@
 import requests
 import sys
 import json
+import utils
 import xml.etree.ElementTree as ET
+
+period, limit, verbose = utils.handleArgs(sys.argv)
 shortterm = '_hour_by_hour'
 xml  = '.xml'
 webhook_url = 'https://hooks.slack.com/services/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'
@@ -18,8 +21,7 @@ urls = ['https://www.yr.no/place/Norway/Akershus/Frogn/Torkilstranda/forecast',
         'https://www.yr.no/place/Norway/Vestfold/T%C3%B8nsberg/Feskj%C3%A6r/forecast',
         'https://www.yr.no/place/Norway/Vestfold/Larvik/Omlidstranda_camping/forecast']
 
-period = sys.argv[1]
-limit = int(sys.argv[2])
+
 report = '''
     place: {}
     time: {}
@@ -48,10 +50,11 @@ for url in urls:
             psi = child.find('pressure')
 
             if float(spd.get('mps')) > limit:
-                print(report.format(name, frm, dir.get('deg'), dir.get('code'), spd.get('mps'), tmp.get('value'), psi.get('value')))
-                slack_data = {'text': "place: {} windspeed: {}".format(name, spd)}
 
+                if verbose:
+                    print(report.format(name, frm, dir.get('deg'), dir.get('code'), spd.get('mps'), tmp.get('value'), psi.get('value')))
 
+                slack_data = {'text': "Ahoi! {} will have windspeed: {} mps from {} around time {}".format(name, spd.get('mps'), dir.get('code'), frm )}
                 response = requests.post(
                     webhook_url, data=json.dumps(slack_data),
                     headers={'Content-Type': 'application/json'}
