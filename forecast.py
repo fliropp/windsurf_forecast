@@ -2,25 +2,10 @@ import requests
 import sys
 import json
 import utils
+import urls
 import xml.etree.ElementTree as ET
 
 period, limit, verbose = utils.handleArgs(sys.argv)
-shortterm = '_hour_by_hour'
-xml  = '.xml'
-webhook_url = 'https://hooks.slack.com/services/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'
-
-urls = ['https://www.yr.no/place/Norway/Akershus/Frogn/Torkilstranda/forecast',
-        'https://www.yr.no/sted/Norge/%C3%98stfold/Rygge/Larkollen~2779456/forecast',
-        'https://www.yr.no/place/Norway/%C3%98stfold/Hvaler/Brattest%C3%B8/forecast',
-        'https://www.yr.no/place/Sweden/V%C3%A4stra_G%C3%B6taland/Ross%C3%B6-Lyngnholmen/forecast',
-        'https://www.yr.no/place/Norway/%C3%98stfold/Hvaler/%C3%98rekroken/forecast',
-        'https://www.yr.no/place/Norway/Vestfold/T%C3%B8nsberg/Ringshaugbukta/forecast',
-        'https://www.yr.no/place/Sweden/%C3%96rebro/Apelviken/forecast',
-        'https://www.yr.no/place/Norway/Akershus/B%C3%A6rum/Halden_brygge/forecast',
-        'https://www.yr.no/place/Norway/Vestfold/T%C3%B8nsberg/Skallevollbukta/forecast',
-        'https://www.yr.no/place/Norway/Vestfold/T%C3%B8nsberg/Feskj%C3%A6r/forecast',
-        'https://www.yr.no/place/Norway/Vestfold/Larvik/Omlidstranda_camping/forecast']
-
 
 report = '''
     place: {}
@@ -31,11 +16,11 @@ report = '''
     ______________________
     '''
 
-for url in urls:
+for url in urls.urls:
     request = url
     if period == "short":
-        request = request + shortterm
-    request = request + xml
+        request = request + urls.shortterm
+    request = request + urls.xml
     response = requests.get(request)
 
     if response:
@@ -56,7 +41,7 @@ for url in urls:
 
                 slack_data = {'text': "Ahoi! {} will have windspeed: {} mps from {} around time {}".format(name, spd.get('mps'), dir.get('code'), frm )}
                 response = requests.post(
-                    webhook_url, data=json.dumps(slack_data),
+                    urls.webhook_url, data=json.dumps(slack_data),
                     headers={'Content-Type': 'application/json'}
                 )
                 if response.status_code != 200:
